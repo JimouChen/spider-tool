@@ -4,6 +4,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ActionChains
 from selenium.webdriver import ChromeOptions
+import numpy as np
+import cv2
 
 # 去除浏览器识别
 option = ChromeOptions()
@@ -13,6 +15,42 @@ option.add_experimental_option("detach", True)
 
 def get_abs_path():
     return
+
+
+def auto_slice(driver,
+               bg_img_xpath=None,
+               slice_xpath=None,
+               save_bg_path=None,
+               save_slice_path=None):
+    # driver = webdriver.Chrome()
+
+    # 拿到背景图片和滑块的图片链接并下载后加载进来
+    bg_img_link = driver.find_element(By.XPATH, bg_img_xpath).get_attribute("src")
+    slice_link = driver.find_element(By.XPATH, slice_xpath).get_attribute("src")
+    bg_img = load_link_img(bg_img_link, save_bg_path)
+    slice_img = load_link_img(slice_link, save_slice_path)
+    # 获取偏移量
+    result = cv2.matchTemplate(bg_img, slice_img, cv2.TM_CCOEFF_NORMED)
+    # 查找slice_img在bg_img中的位置，返回result是一个矩阵，是每个点的匹配结果
+    x, y = np.unravel_index(result.argmax(), result.shape)
+    # 获取滑块
+    element = driver.find_element(By.XPATH, slice_xpath)
+    action = ActionChains(driver)
+    action.click_and_hold(on_element=element).perform()
+    action.move_to_element_with_offset(to_element=element, xoffset=y, yoffset=0).perform()
+    action.release(on_element=element).perform()
+    sleep(2)
+
+
+def load_link_img(link, save_img_path):
+    from urllib.request import urlopen
+    # link = 'https://img-blog.csdnimg.cn/20191124184305512.png'
+    with urlopen(link) as f:
+        data = f.read()
+    with open(save_img_path, 'wb') as p:
+        p.write(data)
+    img = cv2.imread(save_img_path, 0)
+    return img
 
 
 def fresh_web_page():
@@ -49,27 +87,20 @@ def login_zhihu(account='xxx', password='xxx'):
     psw = driver.find_element(By.NAME, 'password')
     psw.clear()
     psw.send_keys(password)
-
+    # 输入用户名和密码后点登陆
     driver.find_element(By.XPATH,
                         '//*[@id="root"]/div/main/div/div/div/div/div[2]/div/div[1]/div/div[1]/form/button').click()
 
     # 处理滑块验证
-    # 标签定位滑块id
-    span = driver.find_element(By.XPATH,
-                               '/html/body/div[4]/div[2]/div/div/div[2]/div/div[2]/div[2]')
-
-    action = ActionChains(driver)  # 行为链实例化
-    action.click_and_hold(span)
-
-    for i in range(10):
-        action.move_by_offset(36, 0).perform()  # perform()立即执行动作链操作，move_by_offset(x, y):x水平方向  y竖直方向
-        sleep(0.1)
-
-    # 释放行为链
-    action.release()
-    print(driver.page_source)
-    sleep(10)
-    print('===' * 50, '\n\n\n\n\n')
+    bg_img_xpath = '',
+    slice_xpath = '',
+    save_bg_path = '',
+    save_slice_path = ''
+    auto_slice(driver,
+               bg_img_xpath,
+               slice_xpath,
+               save_bg_path,
+               save_slice_path)
 
     print(driver.page_source)
     driver.quit()
