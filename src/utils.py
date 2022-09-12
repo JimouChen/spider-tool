@@ -6,6 +6,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver import ChromeOptions
 import numpy as np
 import cv2
+from urllib.request import urlopen
 
 # 去除浏览器识别
 option = ChromeOptions()
@@ -40,11 +41,17 @@ def auto_slice(driver,
     action.move_to_element_with_offset(to_element=element, xoffset=y, yoffset=0).perform()
     action.release(on_element=element).perform()
     sleep(2)
+    print(driver.page_source)
+    print('==' * 50, end='\n\n\n')
+    return driver
 
 
 def load_link_img(link, save_img_path):
-    from urllib.request import urlopen
+    if link is None:
+        print('图片链接不能为空')
+        exit(0)
     # link = 'https://img-blog.csdnimg.cn/20191124184305512.png'
+
     with urlopen(link) as f:
         data = f.read()
     with open(save_img_path, 'wb') as p:
@@ -53,12 +60,15 @@ def load_link_img(link, save_img_path):
     return img
 
 
-def fresh_web_page():
+def fresh_web_page(url='https://zhuanlan.zhihu.com/p/551826108'):
     driver = webdriver.Chrome(options=option)  # mac M1
     # driver.get("https://github.com/JimouChen")  # 刷新网址
-    url = 'https://zhuanlan.zhihu.com/p/550383738'
+    # url = 'https://zhuanlan.zhihu.com/p/551826108'
     driver.get(url=url)
-
+    sleep(10)
+    driver.find_element(By.XPATH, '/html/body/div[4]/div/div/div/div[2]/button/svg').click()
+    sleep(5)
+    print(driver.page_source)
     try:
         for i in range(100):  # 刷新次数
             driver.refresh()  # 刷新网页
@@ -71,9 +81,10 @@ def fresh_web_page():
         print('close driver finished')
 
 
-def login_zhihu(account='xxx', password='xxx'):
+def login_zhihu(account='xxx',
+                password='xxx'):
     driver = webdriver.Chrome(options=option)
-    url = 'https://www.zhihu.com/signin?next=%2F'
+    url = 'zhihu_login_link'
     driver.get(url=url)
     # 点击密码登陆
     driver.find_element(By.XPATH,
@@ -92,15 +103,41 @@ def login_zhihu(account='xxx', password='xxx'):
                         '//*[@id="root"]/div/main/div/div/div/div/div[2]/div/div[1]/div/div[1]/form/button').click()
 
     # 处理滑块验证
-    bg_img_xpath = '',
-    slice_xpath = '',
-    save_bg_path = '',
-    save_slice_path = ''
-    auto_slice(driver,
-               bg_img_xpath,
-               slice_xpath,
-               save_bg_path,
-               save_slice_path)
+    # 手动滑动则不运行auto_slice
+    # bg_img_xpath = '/html/body/div[4]/div[2]/div/div/div[2]/div/div[1]/div/div[1]/img[1]'
+    # bg_img_xpath = '//img[@class="yidun_bg-img"]'
 
+    # slice_xpath = '/html/body/div[4]/div[2]/div/div/div[2]/div/div[1]/div/div[1]/img[2]'
+    # save_bg_path = '../static/img/bg.png'
+    # save_slice_path = '../static/img/slice.png'
+
+    # driver = auto_slice(driver,
+    #                     bg_img_xpath,
+    #                     slice_xpath,
+    #                     save_bg_path,
+    #                     save_slice_path)
+
+    sleep(10)
     print(driver.page_source)
-    driver.quit()
+    # driver.quit()
+
+
+def login_ipi_mail(uname='xxx',
+                   psw='xxx'):
+    driver = webdriver.Chrome(options=option)
+    url = 'https://mail.ipi-tech.com'
+    driver.get(url=url)
+
+    account = driver.find_element(By.NAME, 'qquin')
+    account.clear()
+    account.send_keys(uname)
+
+    password = driver.find_element(By.XPATH, '//*[@id="pp"]')
+    password.click()
+    password.send_keys(psw)
+
+    driver.find_element(By.XPATH, '//*[@id="pwd_content"]/div[6]/a/input').click()
+
+    sleep(3)
+    driver.find_element(By.XPATH, '//*[@id="folder_1"]').click()
+    print(driver.page_source)
