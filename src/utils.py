@@ -1,5 +1,9 @@
 from time import sleep
 from datetime import datetime
+import pyautogui
+# import tkinter
+from PIL import ImageGrab
+from PIL import ImageGrab
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ActionChains
@@ -141,3 +145,66 @@ def login_ipi_mail(uname='xxx',
     sleep(3)
     driver.find_element(By.XPATH, '//*[@id="folder_1"]').click()
     print(driver.page_source)
+
+
+def auto_youth_study():
+    # from selenium.webdriver.support.ui import WebDriverWait
+    # from selenium.webdriver.support.select import Select
+    # from selenium.webdriver.support import expected_conditions as EC
+    index_url = 'https://news.cyol.com/gb/channels/vrGlAKDl/index.html'
+    driver = webdriver.Chrome(options=option)
+    driver.get(url=index_url)
+
+    # courses = driver.find_element(By.XPATH, '/html/body/div[4]/div/ul')
+    # print(courses)
+    driver.find_element(By.XPATH, '/html/body/div[4]/div/ul/li[1]/a').click()
+    sleep(3)
+
+    # 切换到新窗口，要不然操作的是第一个窗口
+    list_windows = driver.window_handles
+    # print(list_windows)
+    driver.switch_to.window(list_windows[1])
+    sleep(2)
+    # 用1 秒的时间把光标移动到x,y 位置,y竖向向下增加
+    pyautogui.moveTo(350, 610, duration=1)
+    pyautogui.click(button='left')
+
+    pyautogui.moveTo(350, 580, duration=0.5)
+    pyautogui.click(button='left')
+
+    pyautogui.moveTo(350, 640, duration=1)
+    pyautogui.click(button='left')
+
+    pyautogui.moveTo(350, 150, duration=0.5)
+    pyautogui.click(button='left')
+    # 最后点击确定
+    pyautogui.click(350, 800, button='left')
+    sleep(5)
+    # 最后点击开始学习
+    pyautogui.click(350, 960, button='left')
+    sleep(20)
+    driver.quit()
+
+
+def test_mouse_gui():
+    # pyautogui.moveTo(350, 610, duration=1)
+    # pyautogui.click(button='left')
+    #
+    # pyautogui.moveTo(350, 580, duration=0.5)
+    # pyautogui.click(button='left')
+    #
+    # pyautogui.moveTo(350, 640, duration=1)
+    # pyautogui.click(button='left')
+    #
+    # pyautogui.moveTo(350, 150, duration=0.5)
+    # pyautogui.click(button='right')
+
+    pyautogui.click(350, 960, button='right')
+
+
+def test_get_mofan_com_doc():
+    driver = webdriver.Chrome(options=option)
+    driver.get(url='https://mofanpy.com/tutorials/machine-learning/torch/intro-speed-up-learning')
+    words = driver.find_element(By.XPATH, '/html/body/main/div[2]/div[4]/div[1]').text
+    print(words)
+    driver.quit()
