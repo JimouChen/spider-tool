@@ -16,8 +16,10 @@ def crawl(page: Page, url):
     page.wait_for_timeout(4000)
     print(page.title())
     # 向下滑动
-    # page.evaluate(js_scroll)
-    # page.wait_for_timeout(2)
+    for _ in range(4):
+        page.evaluate(js_scroll)
+        page.wait_for_timeout(2000)
+    sleep(2)
 
     cur_html = page.content()
     soup = BeautifulSoup(cur_html, 'lxml')
