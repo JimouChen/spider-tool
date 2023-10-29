@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait
 import time
 
 pool = ThreadPoolExecutor()
@@ -33,9 +33,13 @@ def llm_c(prompt: list[str]):
 def gel_llm_res(data: dict):
     prompt_list = data.get('prompt_list')
     start = time.time()
-    pool.submit(llm_a, prompt_list)
-    pool.submit(llm_b, prompt_list)
-    pool.submit(llm_c, prompt_list)
+    features = [
+        pool.submit(llm_a, prompt_list),
+        pool.submit(llm_b, prompt_list),
+        pool.submit(llm_c, prompt_list)
+    ]
+    wait(features)
+    pool.shutdown()
     print('finished!')
     print(f'cost: {time.time() - start} s')
 
