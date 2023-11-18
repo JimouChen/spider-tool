@@ -39,16 +39,15 @@ def llm_req(name: str, prompts: list):
         prompt = _.get('prompt')
         ans = name + '_' + get_res(prompt)
         logger.info(f'mid: {mid} ==> {ans}')
-        return {
+        res.append({
             'idx': _.get('idx'),
             'mid': mid,
             'ans': ans
-        }
+        })
 
     with ThreadPoolExecutor(max_workers=max_worker_num) as executor:
-        futures = [executor.submit(worker, item) for item in prompts]
-        for future in futures:  # 遍历future对象的列表
-            res.append(future.result())  # 获取每个future对象的结果，并添加到res列表中
+        futures = [executor.submit(worker, {**item, 'idx': idx}) for idx, item in enumerate(prompts)]
+        # wait(futures) # 若不想让for内部线程全部结束，则不加这句
     sort_and_show(name, res)
 
     return res
@@ -63,7 +62,7 @@ def llm_req__(name: str, prompts: list):
     或者，程序可能会受到操作系统的线程限制，导致无法创建更多的线程，抛出异常；
     - 优点
     少量数据时，可充分发挥系统性能
-    
+
     """
     res = []
     threads = []
